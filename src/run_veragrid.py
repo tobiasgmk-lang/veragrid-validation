@@ -29,6 +29,15 @@ def run_veragrid(case_path):
     }
 
 
+def veragrid_ybus(case_path):
+    """VeraGrid's own Ybus (dense complex array) and the bus number of each row."""
+    grid = gce.open_file(case_path)
+    nc = gce.compile_numerical_circuit_at(grid)      # VeraGrid's internal numeric model
+    Ybus = nc.get_admittance_matrices().Ybus.toarray()  # sparse -> ordinary NumPy array
+    bus_numbers = [int(b.name) for b in grid.buses]
+    return Ybus, bus_numbers
+
+
 if __name__ == "__main__":
     out = run_veragrid(sys.argv[1])
     print(f"converged={out['converged']}  iterations={out['iterations']}  "
