@@ -8,10 +8,7 @@ def build_ybus(case):
 
     n = bus.shape[0]
 
-    idx = {}
-    for i in range(n):
-        bus_number = int(bus[i, BUS_I])
-        idx[bus_number] = i
+    idx = bus_index_map(bus)
 
     Ybus = np.zeros((n, n), dtype=complex)
 

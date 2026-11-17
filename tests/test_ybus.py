@@ -1,9 +1,8 @@
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parents[1] / "src"))
 import numpy as np
-import pytest
 
-from parse_case import parse_case, BUS_I
+from parse_case import parse_case, bus_index_map
 from ybus import build_ybus
 from run_veragrid import veragrid_ybus
 
@@ -13,13 +12,7 @@ def test_ybus():
     my_ybus = build_ybus(case)
     vg_ybus, vg_bus_numbers = veragrid_ybus("data/case9.m")
 
-    my_bus_numbers = case['bus'][:, BUS_I].astype(int)
-
-    my_bus_index = {}
-
-    for i in range(len(my_bus_numbers)):
-        bus_number = int(my_bus_numbers[i])
-        my_bus_index[bus_number] = i
+    my_bus_index = bus_index_map(case['bus'])
 
     order = [
         my_bus_index[bus] for bus in vg_bus_numbers
@@ -29,7 +22,7 @@ def test_ybus():
 
     max_diff = np.max(np.abs(ybus_organized - vg_ybus))
 
-    tol = 1e-8 # tolerance, 6 orders of mag above nose, 7 below a real error
+    tol = 1e-8 # absolute error for p.u. admittance; rounding is about 1e-16 for 64-bit floats; smallest real modelling error (dropping jb/2) is about 0.08"
 
     print(max_diff)
 

@@ -33,6 +33,15 @@ def _read_matrix(text, name):
     return np.array(rows)
 
 
+def bus_index_map(bus):
+    """Map each MATPOWER bus number to its row position in the bus table.
+
+    Bus numbers are labels (they can skip, e.g. 1, 2, 5, 10), so code must
+    never assume bus k sits in row k-1. Example: {1: 0, 2: 1, 5: 2, 10: 3}.
+    """
+    return {int(number): row for row, number in enumerate(bus[:, BUS_I])}
+
+
 def parse_case(path):
     with open(path) as f:
         text = f.read()
