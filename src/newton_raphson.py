@@ -85,22 +85,54 @@ def mismatch(S_sched, S_calc, pq, pvpq):
 
 
 def build_jacobian(Ybus, V, pq, pvpq):
-    """YOURS TO WRITE. Return the (len(pvpq) + len(pq)) square Jacobian of S_calc.
+    # calulate current and unit voltage phasor
+    I = Ybus @ V
+    E = V / np.abs(V)
 
-    Rows follow F:      [P at pvpq ; Q at pq]
-    Columns follow dx:  [angle at pvpq ; |V| at pq]
-    so J = [[dP/dtheta, dP/d|V|],
-            [dQ/dtheta, dQ/d|V|]]
-    """
-    raise NotImplementedError("build_jacobian")
+    # calculate the partial derivative of complex power
+    dS_dtheta = (
+    1j * np.diag(V)
+    @ np.conj(np.diag(I) - Ybus @ np.diag(V))
+    )
+
+    dS_dVm = (
+    np.diag(V) @ np.conj(Ybus @ np.diag(E))
+    + np.conj(np.diag(I)) @ np.diag(E)
+    )
+
+    # 4 jacobian submatricies
+    H = dS_dtheta[np.ix_(pvpq, pvpq)].real
+    N = dS_dVm[np.ix_(pvpq, pq)].real
+    M = dS_dtheta[np.ix_(pq, pvpq)].imag
+    L = dS_dVm[np.ix_(pq, pq)].imag
+
+    # assemble the full jacobian
+    J = np.block([
+        [H, N],
+        [M, L]
+    ])
+
+    return J
 
 
 def update_voltage(V, dx, pq, pvpq):
-    """YOURS TO WRITE. Apply the Newton step dx and return the new complex V.
+    # split the newton step into angle and magnitude components
+    n_angle = len(pvpq)
+    dtheta = dx[:n_angle]
+    dVm = dx[n_angle:]
 
-    dx is ordered like the Jacobian columns: [angle at pvpq ; |V| at pq].
-    """
-    raise NotImplementedError("update_voltage")
+    # extract current voltage magnitude and angle
+    Vm = np.abs(V)
+    theta = np.angle(V)
+
+    # apply corrections to the voltage magnitude and angle
+    Vm[pq] += dVm
+    theta[pvpq] += dtheta
+
+    # recontruct the complex voltage phasor
+    V = Vm * np.exp(1j * theta)
+
+    return V 
 
 
 def solve_power_flow(case, tol=1e-6, max_iter=25):
