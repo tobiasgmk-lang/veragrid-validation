@@ -1,4 +1,4 @@
-"""Build the bus admittance matrix (Ybus) from a parsed MATPOWER case.
+"""Build the bus admittance matrix (Ybus) from a MATPOWER case.
 
 Each line or transformer is a pi model: series admittance y = 1/(r + jx) between
 its two buses, plus half the line charging (j*b/2) to ground at each end.

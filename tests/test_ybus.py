@@ -1,4 +1,4 @@
-"""Check my Ybus against VeraGrid's, entry by entry, on case9.
+"""Check my Ybus against VeraGrid's on case9.
 
 What a pass shows: the branch pi models and bus alignment match VeraGrid.
 What it does not show: bus shunts, out-of-service branches and taps, because
