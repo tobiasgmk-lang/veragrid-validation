@@ -1,0 +1,3 @@
+solver,converged,iterations,final_max_mismatch_pu,losses_MW,max_dVm_pu,max_dVa_deg
+mine,True,3,3.421e-07,4.641023,4.441e-16,8.882e-15
+veragrid,True,3,3.421e-07,4.641023,4.441e-16,8.882e-15
