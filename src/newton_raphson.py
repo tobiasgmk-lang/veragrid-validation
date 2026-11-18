@@ -143,10 +143,12 @@ def solve_power_flow(case, tol=1e-6, max_iter=25):
 
     converged = False
     iterations = 0 # counts Newton steps taken (Jacobian solves)
+    history = [] # largest mismatch before each step, to show how fast NR converges
     while True:
         S_calc = calculate_power(Ybus, V)
         F = mismatch(S_sched, S_calc, pq, pvpq)
         error = np.max(np.abs(F)) # largest mismatch in p.u., same test VeraGrid uses
+        history.append(error)
 
         if error < tol: # converged
             converged = True
@@ -167,6 +169,7 @@ def solve_power_flow(case, tol=1e-6, max_iter=25):
         "converged": converged,
         "iterations": iterations,
         "error": error,
+        "mismatch_history": history,
         # sum of every bus injection = what the network consumed = losses
         "losses_MW": float(np.sum(S_calc.real) * case['baseMVA']),
     }
