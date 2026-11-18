@@ -4,7 +4,7 @@
 
 This is me trying to build a power flow so that I can learn the mechanics behind it. It's about being able to trust a tool that I would test, and to identify mistakes in it as well.
 
-I did this because I've been fascinated by this topic. I want an internship in it and I would like to work in it, but I have no experience in it.
+I did this because I've been fascinated by this topic. I want an internship in it and I would like to work in it, but I have no industry experience in it.
 
 The project validates VeraGrid's AC power flow against a Newton–Raphson solver that I wrote myself, and tests and documents the comparison. Both solvers read the same IEEE 9-bus case file (`case9.m` from MATPOWER), so any difference comes from the method or a setting, not the data. I also ran MATPOWER 8.0 (in MATLAB) as a third check.
 
