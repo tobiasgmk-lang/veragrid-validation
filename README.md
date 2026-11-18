@@ -93,6 +93,8 @@ writematrix(r.bus(:, [1 8 9]), 'results/matpower_case9.csv');
 
 `data/case14.m` is included but not supported yet: it has transformer taps, and the code stops on purpose when it finds one.
 
+The case files in `data/` are from [MATPOWER](https://github.com/MATPOWER/matpower) and are used under MATPOWER's BSD 3-clause license.
+
 ## Results
 
 Case9, after matching buses by bus number. Differences are the largest over all 9 buses.
