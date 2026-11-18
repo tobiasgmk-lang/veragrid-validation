@@ -6,15 +6,15 @@ import VeraGridEngine.api as gce
 
 
 def run_veragrid(case_path, control_q=False): # control_q=True turns generator Q limits on
-    grid = gce.open_file(case_path)
+    grid = gce.open_file(case_path) # VeraGrid reads the .m file with its own parser, not mine
     options = gce.PowerFlowOptions(
         solver_type=gce.SolverType.NR,   # Newton-Raphson, same method as mine
-        tolerance=1e-6,                  # VeraGrid default, stated explicitly
-        max_iter=25,
+        tolerance=1e-6,                  # VeraGrid default, stated explicitly. same as my solver
+        max_iter=25,                     # same cap as my solver
         control_q=control_q,             # default OFF: my solver has no Q limits, so like-for-like
         retry_with_other_methods=False,  # if NR fails, fail loudly instead of switching solver
     )
-    res = gce.power_flow(grid, options)
+    res = gce.power_flow(grid, options) # run the power flow
 
     V = np.asarray(res.voltage)                     # complex bus voltages, p.u.
     bus_numbers = [int(b.name) for b in grid.buses]  # MATPOWER bus number for each row
@@ -25,7 +25,7 @@ def run_veragrid(case_path, control_q=False): # control_q=True turns generator Q
         "converged": bool(res.converged),
         "iterations": res.iterations,
         "error": res.error,
-        "losses_MW": float(np.sum(np.real(res.losses))),
+        "losses_MW": float(np.sum(np.real(res.losses))), # losses per branch are complex MVA: real part = MW
     }
 
 
@@ -38,8 +38,8 @@ def veragrid_ybus(case_path):
     return Ybus, bus_numbers
 
 
-if __name__ == "__main__":
-    out = run_veragrid(sys.argv[1])
+if __name__ == "__main__": # only runs from the terminal: python src/run_veragrid.py data/case9.m
+    out = run_veragrid(sys.argv[1]) # argv[1] = the case file path typed after the script name
     print(f"converged={out['converged']}  iterations={out['iterations']}  "
           f"error={out['error']:.2e}  losses={out['losses_MW']:.3f} MW")
     print(" bus   |V| (p.u.)   angle (deg)")

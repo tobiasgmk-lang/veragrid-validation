@@ -18,8 +18,9 @@ def write_comparison(case_name, bus, Vm_mine, Vm_vg, Va_mine, Va_vg, mine, vg):
     """
     RESULTS.mkdir(exist_ok=True)
 
-    with open(RESULTS / f"{case_name}_comparison.csv", "w", newline="") as f:
+    with open(RESULTS / f"{case_name}_comparison.csv", "w", newline="") as f: # "w" overwrites the file every run
         w = csv.writer(f)
+        # 8 decimals for values so tiny differences stay visible; differences in scientific notation
         w.writerow(["bus", "Vm_mine_pu", "Vm_veragrid_pu", "dVm_pu",
                     "Va_mine_deg", "Va_veragrid_deg", "dVa_deg"])
         for b, vm1, vm2, va1, va2 in zip(bus, Vm_mine, Vm_vg, Va_mine, Va_vg):

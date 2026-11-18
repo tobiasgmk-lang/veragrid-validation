@@ -22,15 +22,15 @@ TAP, SHIFT, BR_STATUS = 8, 9, 10
 
 def _read_matrix(text, name):
     """Return the numbers between 'mpc.<name> = [' and '];' as a 2-D array."""
-    match = re.search(rf"mpc\.{name}\s*=\s*\[(.*?)\];", text, re.S)
+    match = re.search(rf"mpc\.{name}\s*=\s*\[(.*?)\];", text, re.S) # re.S: the table can span many lines
     if match is None:
         raise ValueError(f"mpc.{name} not found")
     rows = []
     for line in match.group(1).splitlines():
         line = line.split("%")[0].strip().rstrip(";")   # drop comments and row end
         if line:
-            rows.append([float(v) for v in line.split()])
-    return np.array(rows)
+            rows.append([float(v) for v in line.split()]) # every number on the row becomes a float
+    return np.array(rows) # float array: bus numbers come back as 1.0, 2.0, ... (use int() for lookups)
 
 
 def bus_index_map(bus):
@@ -44,8 +44,8 @@ def bus_index_map(bus):
 
 def parse_case(path):
     with open(path) as f:
-        text = f.read()
-    base = re.search(r"mpc\.baseMVA\s*=\s*([\d.]+)", text)
+        text = f.read() # read the file as plain text: nothing in it is run
+    base = re.search(r"mpc\.baseMVA\s*=\s*([\d.]+)", text) # system base, usually 100 MVA
     return {
         "baseMVA": float(base.group(1)),
         "bus": _read_matrix(text, "bus"),

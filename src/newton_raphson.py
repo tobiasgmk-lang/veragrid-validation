@@ -85,28 +85,30 @@ def mismatch(S_sched, S_calc, pq, pvpq):
 
 
 def build_jacobian(Ybus, V, pq, pvpq):
-    # calulate current and unit voltage phasor
-    I = Ybus @ V
-    E = V / np.abs(V)
+    # calculate current and unit voltage phasor
+    I = Ybus @ V # current injected at each bus
+    E = V / np.abs(V) # V scaled to magnitude 1: keeps only the direction (angle)
 
     # calculate the partial derivative of complex power
-    dS_dtheta = (
+    # (matrix form of the product rule on S = V * conj(Ybus V), from MATPOWER's technical note 2)
+    dS_dtheta = ( # how S at every bus changes when each angle changes
     1j * np.diag(V)
     @ np.conj(np.diag(I) - Ybus @ np.diag(V))
     )
 
-    dS_dVm = (
+    dS_dVm = ( # how S at every bus changes when each |V| changes
     np.diag(V) @ np.conj(Ybus @ np.diag(E))
     + np.conj(np.diag(I)) @ np.diag(E)
     )
 
-    # 4 jacobian submatricies
-    H = dS_dtheta[np.ix_(pvpq, pvpq)].real
-    N = dS_dVm[np.ix_(pvpq, pq)].real
-    M = dS_dtheta[np.ix_(pq, pvpq)].imag
-    L = dS_dVm[np.ix_(pq, pq)].imag
+    # 4 jacobian submatrices: real part = P rows, imaginary part = Q rows
+    # (angles and |V| are real numbers, so d(Re S) = Re(dS))
+    H = dS_dtheta[np.ix_(pvpq, pvpq)].real # dP/dtheta
+    N = dS_dVm[np.ix_(pvpq, pq)].real      # dP/d|V|  (only pq buses have an unknown |V|)
+    M = dS_dtheta[np.ix_(pq, pvpq)].imag   # dQ/dtheta (only pq buses have a Q equation)
+    L = dS_dVm[np.ix_(pq, pq)].imag        # dQ/d|V|
 
-    # assemble the full jacobian
+    # assemble the full jacobian: rows follow F, columns follow dx. the slack is in neither
     J = np.block([
         [H, N],
         [M, L]
@@ -117,19 +119,20 @@ def build_jacobian(Ybus, V, pq, pvpq):
 
 def update_voltage(V, dx, pq, pvpq):
     # split the newton step into angle and magnitude components
+    # (same order as the jacobian columns: angles first, then |V|)
     n_angle = len(pvpq)
-    dtheta = dx[:n_angle]
-    dVm = dx[n_angle:]
+    dtheta = dx[:n_angle] # radians
+    dVm = dx[n_angle:] # p.u.
 
     # extract current voltage magnitude and angle
     Vm = np.abs(V)
     theta = np.angle(V)
 
     # apply corrections to the voltage magnitude and angle
-    Vm[pq] += dVm
-    theta[pvpq] += dtheta
+    Vm[pq] += dVm # only pq buses: pv and slack |V| stay at their setpoint Vg
+    theta[pvpq] += dtheta # every bus except the slack, which stays at 0
 
-    # recontruct the complex voltage phasor
+    # reconstruct the complex voltage phasor: V = |V| e^(j theta)
     V = Vm * np.exp(1j * theta)
 
     return V 
@@ -150,7 +153,7 @@ def solve_power_flow(case, tol=1e-6, max_iter=25):
         error = np.max(np.abs(F)) # largest mismatch in p.u., same test VeraGrid uses
         history.append(error)
 
-        if error < tol: # converged
+        if error < tol: # converged. smaller tol = more accurate answer, maybe one more step
             converged = True
             break
         if iterations == max_iter: # give up, report failure
