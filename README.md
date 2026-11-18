@@ -2,9 +2,11 @@
 
 ## What this is and why
 
-This project validates VeraGrid's AC power flow against a Newton–Raphson solver that I wrote myself, and tests and documents the comparison. Both solvers read the same IEEE 9-bus case file (`case9.m` from MATPOWER), so any difference comes from the method or a setting, not the data. I also ran MATPOWER 8.0 (in MATLAB) as a third check.
+This is me trying to build a power flow so that I can learn the mechanics behind it. It's about being able to trust a tool that I would test, and to identify mistakes in it as well.
 
-I built it for my application to eRoots' VeraGrid internship, where the work is model validation, automated testing and documentation.
+I did this because I've been fascinated by this topic. I want an internship in it and I would like to work in it, but I have no experience in it.
+
+The project validates VeraGrid's AC power flow against a Newton–Raphson solver that I wrote myself, and tests and documents the comparison. Both solvers read the same IEEE 9-bus case file (`case9.m` from MATPOWER), so any difference comes from the method or a setting, not the data. I also ran MATPOWER 8.0 (in MATLAB) as a third check.
 
 ## How it works
 
@@ -125,6 +127,7 @@ Bugs the tests caught in my own code:
 
 ## Limitations
 
+- Three solvers agreeing to the last digit is reassuring, but it's also suspicious. They have the same formulation, so they can't catch a mistake that they'd all make.
 - It's only a small case. A 9-bus system converges easily.
 - It doesn't test transformer taps, bus shunts, out-of-service branches, reactive limits, or several generators at one bus, because case9 has none of these.
 - The tolerances assume that the smallest real modelling error is about 1e-3 p.u. That's an estimate, not a measurement.
@@ -134,3 +137,28 @@ Bugs the tests caught in my own code:
 - **case14:** add taps to the Ybus code and test the bus shunt (bus 9).
 - **Break the model on purpose**, for example by removing b/2 from one line, to see the test fail and to measure the real error the tolerances rely on.
 - **Add reactive limits to my solver.**
+
+## How I used AI
+
+During the creation of this project I used Claude (Opus 5.5, Anthropic), and another AI assistant and Stack Overflow for parts of the Ybus, the Jacobian and the test comparison. Whilst I would like to be at the stage where I could do this myself, I tried to understand, the best I could, what the AI was doing.
+
+I wrote:
+- the Ybus
+- the scheduled power
+- the bus types
+- the mismatch vector
+- the Jacobian and voltage updates (the matrix formulas for the Jacobian came from Claude, from MATPOWER's technical note)
+- the comparison logic for both tests
+
+The AI wrote:
+- the parser
+- the VeraGrid runner
+- the CSV writer
+- the reactive (Q) limit script
+- the solver loop and the starting voltages
+- most of the comments
+- this README, assembled from what I dictated
+
+In order to build my understanding I tried to predict results before running them, explain the structure back as I understood it, check independently with VeraGrid and MATPOWER, and test each part as it was built.
+
+I've learnt Python through coursework. I would not call myself an expert. I took notes the best I could on my understanding throughout this, and with my notes I could rebuild the `build_jacobian` function. I will try to do it later. I also used the AI to make sure that my code only considered things that were relevant and was modular, so that I could use it in other cases. I tried to make it as efficient as possible and easy for other people to follow along with what is happening.
