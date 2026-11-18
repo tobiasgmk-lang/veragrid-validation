@@ -19,7 +19,7 @@ def test_powerflow():
 
     # run both solvers on the same case
     mine = solve_power_flow(case)
-    vg = run_veragrid("data/case9.m") # VeraGrid reads the file itself
+    vg = run_veragrid("data/case9.m")
 
     # both solvers should converge
     assert mine["converged"], "mine did not converge"
@@ -45,14 +45,14 @@ def test_powerflow():
     delta_losses = abs(mine["losses_MW"] - vg["losses_MW"])
 
     # tolerances for comparison
-    # both solvers stop at max mismatch < 1e-6 p.u., so each answer can sit ~1e-6 p.u.
-    # (|V|) or ~1e-6 rad = ~6e-5 deg (angle) from the true solution. These two
-    # tolerances are at that noise floor: they pass because both solvers stop at
-    # almost the same point, not because the stopping rule guarantees it.
-    vm_tol = 1e-6 # p.u.
-    va_tol = 1e-4 # degrees
-    # losses noise floor: 8 buses x 1e-6 p.u. leftover mismatch x 100 MVA = 8e-4 MW
-    loss_tol = 1e-2 # MW: ~12x above that floor
+    # each tolerance sits between two numbers:
+    #   noise floor: both solvers stop once the largest power mismatch < 1e-6 p.u., so each
+    #                answer can sit ~1e-6 away from the true solution even if both are correct
+    #   real error:  the smallest modelling mistake worth catching, e.g. dropping j*b/2 on one
+    #                line, moves |V| by ~1e-3 p.u. (estimated, not measured)
+    vm_tol = 1e-5 # p.u.: noise ~1e-6 p.u., so 10x above noise and ~100x below a real error
+    va_tol = 1e-3 # degrees: noise ~1e-6 rad = ~6e-5 deg, so ~17x above noise
+    loss_tol = 1e-2 # MW: noise = 8 buses x 1e-6 p.u. x 100 MVA = 8e-4 MW, so ~12x above noise
 
     print(f"Maximum |∆V|: {max_dVm:.2e} p.u.")
     print(f"Maximum |∆θ|: {max_dVa:.2e} degrees")

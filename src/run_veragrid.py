@@ -5,13 +5,13 @@ import numpy as np
 import VeraGridEngine.api as gce
 
 
-def run_veragrid(case_path):
+def run_veragrid(case_path, control_q=False): # control_q=True turns generator Q limits on
     grid = gce.open_file(case_path)
     options = gce.PowerFlowOptions(
         solver_type=gce.SolverType.NR,   # Newton-Raphson, same method as mine
         tolerance=1e-6,                  # VeraGrid default, stated explicitly
         max_iter=25,
-        control_q=False,                 # reactive limits OFF for a like-for-like comparison
+        control_q=control_q,             # default OFF: my solver has no Q limits, so like-for-like
         retry_with_other_methods=False,  # if NR fails, fail loudly instead of switching solver
     )
     res = gce.power_flow(grid, options)
