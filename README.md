@@ -68,7 +68,7 @@ The error drops very quickly near the answer because of quadratic convergence. E
 You need Python 3.13 and git.
 
 ```
-git clone https://github.com/<username>/veragrid-validation.git
+git clone https://github.com/tobiasgmk-lang/veragrid-validation.git
 cd veragrid-validation
 python3 -m venv .venv
 source .venv/bin/activate
